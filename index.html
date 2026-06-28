@@ -1,3 +1,5 @@
+// Inline the HTML content to serve it on the root path
+const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,15 +17,57 @@
   </style>
 </head>
 <body>
-
-      <div class="status-card">
+  <div class="status-card">
     <h1>✔ Static Edge Target Online</h1>
     <p>Your HTML/CSS assets are routing correctly across the edge lookup cluster maps layer.</p>
-    
-    <a href="api/test" class="btn-test">Execute Serverless Sandbox Test</a>
+    <a href="/api/test" class="btn-test">Execute Serverless Sandbox Test</a>
   </div>
-
-
-
 </body>
 </html>
+`;
+
+export default async function (request, env) {
+  const url = new URL(request.url);
+
+  // 1. Route for the API Endpoint
+  if (url.pathname === "/api/test") {
+    const targetSecretValue = env.TEST_SECRET_KEY || "NOT_FOUND";
+
+    const responseBody = {
+      success: true,
+      status: "Verified",
+      timestamp: new Date().toISOString(),
+      edge_environment: {
+        platform: env.PLATFORM_NAME || "Unknown Platform",
+        mode: env.ENVIRONMENT || "Unknown Mode",
+      },
+      custom_injected_secrets: {
+        TEST_SECRET_KEY: targetSecretValue
+      }
+    };
+
+    return new Response(JSON.stringify(responseBody, null, 2), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+
+  // 2. Route for the Root Domain (Serve the Landing Page)
+  if (url.pathname === "/" || url.pathname === "/index.html") {
+    return new Response(htmlContent, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8"
+      }
+    });
+  }
+
+  // 3. Fallback Custom 404 Error if path doesn't match
+  return new Response(`404: File or API endpoint "${url.pathname.substring(1)}" was not found.`, {
+    status: 404,
+    headers: { "Content-Type": "text/plain" }
+  });
+}
