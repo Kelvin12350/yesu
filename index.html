@@ -40,24 +40,40 @@
   </div>
 
   <script>
-    async function triggerSandboxTest() {
-      const consoleDisplay = document.getElementById("terminalConsole");
-      consoleDisplay.style.color = "#F59E0B";
-      consoleDisplay.textContent = "// Instantiating isolated serverless sandbox execution...";
+  async function triggerSandboxTest() {
+    const consoleDisplay = document.getElementById("terminalConsole");
+    consoleDisplay.style.color = "#F59E0B";
+    consoleDisplay.textContent = "// Instantiating isolated serverless sandbox execution...";
+    
+    try {
+      // SMART PATH RESOLUTION: Detects if running on a path-based domain (/site/yesu)
+      let fetchUrl = "api/test";
+      const pathParts = window.location.pathname.split('/');
       
-      try {
-        // Targets the relative dynamic edge-configured API folder file path
-        const response = await fetch("api/test");
-        const payload = await response.json();
-        
-        consoleDisplay.style.color = "#10B981";
-        consoleDisplay.textContent = JSON.stringify(payload, null, 2);
-      } catch (err) {
-        consoleDisplay.style.color = "#EF4444";
-        consoleDisplay.textContent = `[Substrate Core Exception Fault]\n${err.message}`;
+      if (pathParts[1] === 'site' && pathParts[2]) {
+        // Force it to point directly to /site/subdomain/api/test regardless of trailing slashes
+        fetchUrl = `/site/${pathParts[2]}/api/test`;
       }
+      
+      const response = await fetch(fetchUrl);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        consoleDisplay.style.color = "#EF4444";
+        consoleDisplay.textContent = `[Server Error ${response.status}]\n${errorText}`;
+        return;
+      }
+      
+      const payload = await response.json();
+      consoleDisplay.style.color = "#10B981";
+      consoleDisplay.textContent = JSON.stringify(payload, null, 2);
+    } catch (err) {
+      consoleDisplay.style.color = "#EF4444";
+      consoleDisplay.textContent = `[Substrate Core Exception Fault]\n${err.message}`;
     }
-  </script>
+  }
+</script>
+
 
 </body>
 </html>
