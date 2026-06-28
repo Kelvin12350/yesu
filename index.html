@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edge Verification Terminal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+    body { background: #000; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+    .status-card { max-width: 440px; background: #0A0A0A; border: 1px solid #1F1F1F; padding: 32px; border-radius: 12px; }
+    h1 { font-size: 1.4rem; color: #fff; margin-bottom: 8px; letter-spacing: -0.5px; }
+    p { color: #888; font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5; }
+    .btn-test { display: inline-block; text-decoration: none; background: #fff; color: #000; font-weight: 600; font-size: 0.85rem; padding: 12px 20px; border-radius: 6px; transition: background 0.2s; }
+    .btn-test:hover { background: #ccc; }
+  </style>
+</head>
+<body>
+
+  <div class="status-card">
+    <h1>✔ Static Edge Target Online</h1>
+    <p>Your HTML/CSS assets are routing correctly across the edge lookup cluster maps layer.</p>
+    
+    <a href="./api/test.js" class="btn-test">Execute Serverless Sandbox Test</a>
+  </div>
+
+</body>
+</html>
