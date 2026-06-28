@@ -46,34 +46,35 @@
     consoleDisplay.textContent = "// Instantiating isolated serverless sandbox execution...";
     
     try {
-      // SMART PATH RESOLUTION: Detects if running on a path-based domain (/site/yesu)
       let fetchUrl = "api/test";
       const pathParts = window.location.pathname.split('/');
       
       if (pathParts[1] === 'site' && pathParts[2]) {
-        // Force it to point directly to /site/subdomain/api/test regardless of trailing slashes
         fetchUrl = `/site/${pathParts[2]}/api/test`;
       }
       
       const response = await fetch(fetchUrl);
+      const contentType = response.headers.get("content-type") || "";
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        consoleDisplay.style.color = "#EF4444";
-        consoleDisplay.textContent = `[Server Error ${response.status}]\n${errorText}`;
-        return;
-      }
-      
-      const payload = await response.json();
       consoleDisplay.style.color = "#10B981";
-      consoleDisplay.textContent = JSON.stringify(payload, null, 2);
+
+      // SMART FRONTEND HANDLING: 
+      // If the engine parsed it into an object, display it as formatted JSON
+      if (contentType.includes("application/json")) {
+        const payload = await response.json();
+        consoleDisplay.textContent = JSON.stringify(payload, null, 2);
+      } else {
+        // If our parser couldn't structuralize it and sent back raw code, show the raw code text safely!
+        const rawText = await response.text();
+        consoleDisplay.textContent = rawText;
+      }
+
     } catch (err) {
       consoleDisplay.style.color = "#EF4444";
       consoleDisplay.textContent = `[Substrate Core Exception Fault]\n${err.message}`;
     }
   }
 </script>
-
 
 </body>
 </html>
