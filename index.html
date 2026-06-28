@@ -1,73 +1,63 @@
-// Inline the HTML content to serve it on the root path
-const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edge Verification Terminal</title>
+  <title>Edge Core Substrate Diagnostics</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-    body { background: #000; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-    .status-card { max-width: 440px; background: #0A0A0A; border: 1px solid #1F1F1F; padding: 32px; border-radius: 12px; }
-    h1 { font-size: 1.4rem; color: #fff; margin-bottom: 8px; letter-spacing: -0.5px; }
-    p { color: #888; font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5; }
-    .btn-test { display: inline-block; text-decoration: none; background: #fff; color: #000; font-weight: 600; font-size: 0.85rem; padding: 12px 20px; border-radius: 6px; transition: background 0.2s; }
-    .btn-test:hover { background: #ccc; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #000; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .terminal-card { width: 100%; max-width: 540px; background: #0A0A0A; border: 1px solid #1F1F1F; border-radius: 12px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.7); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.1); color: #10B981; font-size: 0.75rem; font-weight: 600; padding: 6px 12px; border-radius: 100px; margin-bottom: 16px; border: 1px solid rgba(16, 185, 129, 0.2); }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+    p { color: #888; font-size: 0.9rem; line-height: 1.5; margin-bottom: 24px; }
+    .actions { display: flex; gap: 12px; margin-bottom: 24px; }
+    .btn { cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; padding: 12px 20px; border-radius: 6px; border: none; transition: all 0.2s ease; text-decoration: none; }
+    .btn-primary { background: #fff; color: #000; }
+    .btn-primary:hover { background: #E5E5E5; }
+    .btn-secondary { background: #1F1F1F; color: #AAA; border: 1px solid #2F2F2F; }
+    .btn-secondary:hover { background: #2A2A2A; color: #fff; }
+    .console-box { background: #050505; border: 1px solid #1A1A1A; border-radius: 8px; padding: 16px; min-height: 140px; max-height: 240px; overflow-y: auto; text-align: left; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.8rem; line-height: 1.4; color: #A7F3D0; }
+    .console-placeholder { color: #444; font-style: italic; }
   </style>
 </head>
 <body>
-  <div class="status-card">
-    <h1>✔ Static Edge Target Online</h1>
-    <p>Your HTML/CSS assets are routing correctly across the edge lookup cluster maps layer.</p>
-    <a href="/api/test" class="btn-test">Execute Serverless Sandbox Test</a>
+
+  <div class="terminal-card">
+    <div class="badge">
+      <span style="height: 6px; width: 6px; background: #10B981; border-radius: 50%;"></span>
+      Edge Substrate Active
+    </div>
+    <h1>GlobalTech Cluster Console</h1>
+    <p>Verify static routing rules and serverless sandbox context synchronization seamlessly from this runtime interface.</p>
+    
+    <div class="actions">
+      <button onclick="triggerSandboxTest()" class="btn btn-primary">Fetch API Context</button>
+      <a href="api/test" target="_blank" class="btn btn-secondary">Open Raw JSON</a>
+    </div>
+
+    <pre class="console-box" id="terminalConsole"><span class="console-placeholder">// Tap "Fetch API Context" to stream environment data runtime logs...</span></pre>
   </div>
+
+  <script>
+    async function triggerSandboxTest() {
+      const consoleDisplay = document.getElementById("terminalConsole");
+      consoleDisplay.style.color = "#F59E0B";
+      consoleDisplay.textContent = "// Instantiating isolated serverless sandbox execution...";
+      
+      try {
+        // Targets the relative dynamic edge-configured API folder file path
+        const response = await fetch("api/test");
+        const payload = await response.json();
+        
+        consoleDisplay.style.color = "#10B981";
+        consoleDisplay.textContent = JSON.stringify(payload, null, 2);
+      } catch (err) {
+        consoleDisplay.style.color = "#EF4444";
+        consoleDisplay.textContent = `[Substrate Core Exception Fault]\n${err.message}`;
+      }
+    }
+  </script>
+
 </body>
 </html>
-`;
-
-export default async function (request, env) {
-  const url = new URL(request.url);
-
-  // 1. Route for the API Endpoint
-  if (url.pathname === "/api/test") {
-    const targetSecretValue = env.TEST_SECRET_KEY || "NOT_FOUND";
-
-    const responseBody = {
-      success: true,
-      status: "Verified",
-      timestamp: new Date().toISOString(),
-      edge_environment: {
-        platform: env.PLATFORM_NAME || "Unknown Platform",
-        mode: env.ENVIRONMENT || "Unknown Mode",
-      },
-      custom_injected_secrets: {
-        TEST_SECRET_KEY: targetSecretValue
-      }
-    };
-
-    return new Response(JSON.stringify(responseBody, null, 2), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Access-Control-Allow-Origin": "*"
-      }
-    });
-  }
-
-  // 2. Route for the Root Domain (Serve the Landing Page)
-  if (url.pathname === "/" || url.pathname === "/index.html") {
-    return new Response(htmlContent, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/html; charset=utf-8"
-      }
-    });
-  }
-
-  // 3. Fallback Custom 404 Error if path doesn't match
-  return new Response(`404: File or API endpoint "${url.pathname.substring(1)}" was not found.`, {
-    status: 404,
-    headers: { "Content-Type": "text/plain" }
-  });
-}
